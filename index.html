@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Events</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1d2433;--muted:#5d6676;--line:#dde1e8;--brand:#1f3d7a;--brand-d:#162c58;--ok:#1e7a46;--warn:#9a6700;--bad:#b42318;--info:#175cd3}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+a{color:var(--brand)}
+header.top{background:var(--brand);color:#fff;position:sticky;top:0;z-index:20}
+.top .in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:17px;color:#fff;text-decoration:none;margin-right:8px}
+.top nav{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.top nav a{color:#dbe4f7;text-decoration:none;padding:6px 10px;border-radius:6px;font-size:14px}
+.top nav a.on,.top nav a:hover{background:rgba(255,255,255,.16);color:#fff}
+.who{font-size:13px;color:#dbe4f7;display:flex;align-items:center;gap:10px}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:24px;margin:4px 0 14px}h2{font-size:18px;margin:22px 0 10px}h3{font-size:15px;margin:0 0 6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.evt{display:flex;flex-direction:column;overflow:hidden;padding:0}
+.evt .img{height:120px;background:linear-gradient(135deg,#dfe6f5,#c9d5ee);background-size:cover;background-position:center}
+.evt .body{padding:14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.evt .meta{color:var(--muted);font-size:13px}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:#eef1f7;color:#3b4660;margin-right:4px}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;border:1px solid}
+.b-Pending{color:var(--warn);background:#fff7e0;border-color:#f0d78a}.b-Confirmed{color:var(--ok);background:#e8f6ee;border-color:#a9dcbf}
+.b-Waitlisted{color:var(--info);background:#e8f0fe;border-color:#b3ccfa}.b-Rejected{color:var(--bad);background:#fdecea;border-color:#f3b8b2}
+.b-Cancelled,.b-Draft,.b-Completed{color:#59606e;background:#eef0f3;border-color:#d3d7de}.b-Published{color:var(--ok);background:#e8f6ee;border-color:#a9dcbf}
+.b-Verified{color:var(--ok);background:#e8f6ee;border-color:#a9dcbf}.b-Notrequired{color:#59606e;background:#eef0f3;border-color:#d3d7de}
+.btn{font:inherit;cursor:pointer;border:1px solid var(--brand);background:var(--brand);color:#fff;padding:8px 14px;border-radius:7px;text-decoration:none;display:inline-block}
+.btn:hover{background:var(--brand-d)}.btn.sec{background:#fff;color:var(--brand)}.btn.sec:hover{background:#eef2fa}
+.btn.bad{background:var(--bad);border-color:var(--bad)}.btn.ok{background:var(--ok);border-color:var(--ok)}.btn.sm{padding:4px 9px;font-size:13px}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.sp{flex:1}
+.tabs{display:flex;gap:6px;margin:0 0 14px;flex-wrap:wrap}.tabs a{padding:6px 12px;border:1px solid var(--line);border-radius:99px;background:#fff;text-decoration:none;color:var(--ink);font-size:14px}.tabs a.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+form .sec-h{font-size:15px;font-weight:700;margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.fg{display:grid;gap:12px 16px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.f{display:flex;flex-direction:column;gap:4px}.f.wide{grid-column:1/-1}
+label{font-size:13px;font-weight:600}.req{color:var(--bad)}
+input,select,textarea{font:inherit;padding:8px 10px;border:1px solid #c5cbd6;border-radius:7px;background:#fff;width:100%;color:var(--ink)}
+input[type=checkbox],input[type=radio]{width:auto}
+textarea{min-height:84px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid #9db7ee;border-color:var(--brand)}
+small{color:var(--muted)}.msg{color:var(--bad);font-size:13px}.f.err input,.f.err select,.f.err textarea{border-color:var(--bad)}
+.radios{display:flex;gap:18px;padding:6px 0}.radios label{font-weight:400;display:flex;gap:6px;align-items:center}
+.notice{padding:12px 14px;border-radius:8px;border:1px solid;margin:0 0 14px}.n-warn{background:#fff7e0;border-color:#f0d78a}.n-info{background:#e8f0fe;border-color:#b3ccfa}.n-bad{background:#fdecea;border-color:#f3b8b2}.n-ok{background:#e8f6ee;border-color:#a9dcbf}
+table{border-collapse:collapse;width:100%;background:#fff}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:top}
+th{background:#f0f2f6;font-size:13px;position:sticky;top:0}tr.click{cursor:pointer}tr.click:hover{background:#f7f9fd}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:10px;max-height:70vh}
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:8px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}.tile b{font-size:24px;display:block}.tile span{color:var(--muted);font-size:13px}
+dl.kv{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:6px 14px;margin:0}dl.kv dt{color:var(--muted);font-size:13px}dl.kv dd{margin:0;word-break:break-word}
+.pre{white-space:pre-wrap}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center}
+#toast div{background:#222;color:#fff;padding:10px 16px;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.25);max-width:90vw}#toast .bad{background:var(--bad)}#toast .ok{background:var(--ok)}
+.ov{position:fixed;inset:0;background:rgba(15,20,35,.5);z-index:50;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px}
+.dlg{background:#fff;border-radius:12px;max-width:820px;width:100%;padding:20px;position:relative}
+.dlg.narrow{max-width:460px;margin-top:12vh}
+.x{position:absolute;right:12px;top:10px;background:none;border:0;font-size:22px;cursor:pointer;color:var(--muted)}
+.thumb{width:110px;height:140px;object-fit:cover;border:1px solid var(--line);border-radius:6px;background:#eef0f3}
+.hero{display:flex;gap:18px;flex-wrap:wrap}.hero .img{width:100%;max-width:340px;border-radius:10px;border:1px solid var(--line);background:#dfe6f5}
+.muted{color:var(--muted)}.center{text-align:center}.hide{display:none!important}
+@media(max-width:640px){main{padding:14px 12px 50px}h1{font-size:21px}dl.kv{grid-template-columns:1fr}.top nav{order:3;width:100%}}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="#/" id="brand">Events</a>
+  <nav id="nav"></nav>
+  <div class="who" id="who"></div>
+</div></header>
+<main id="app"><p class="muted">Loading…</p></main>
+<div id="toast"></div><div id="modal-root"></div>
+
+<script src="config.js"></script>
+<script src="ref.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+'use strict';
+/* ============================== helpers ============================== */
+const $ = (s, r) => (r || document).querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nl = s => esc(s).replace(/\n/g, '<br>');
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], DAY = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function fmtDate(s, withTime) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/.exec(s || '');
+  if (!m) return s ? esc(s) : '';
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  let out = DAY[d.getUTCDay()] + ', ' + (+m[3]) + ' ' + MON[+m[2] - 1] + ' ' + m[1];
+  if (withTime !== false && m[4]) { let h = +m[4]; const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; out += ', ' + h + ':' + m[5] + ' ' + ap; }
+  return out;
+}
+function fmtIso(s) { if (!s) return ''; const d = new Date(s); if (isNaN(d)) return esc(s); return d.toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' }); }
+const ms = s => { if (!s) return NaN; s = String(s); if (s.length === 16) s += ':00'; if (s.length === 19) s += '+05:30'; return Date.parse(s); };
+function toast(msg, kind) { const d = document.createElement('div'); d.className = kind || ''; d.textContent = msg; $('#toast').appendChild(d); setTimeout(() => d.remove(), kind === 'bad' ? 6000 : 3200); }
+function badge(s) { return '<span class="badge b-' + esc(String(s).replace(/\s+/g, '')) + '">' + esc(s) + '</span>'; }
+function openModal(html, narrow) {
+  closeModal();
+  const o = document.createElement('div'); o.className = 'ov'; o.id = 'ov';
+  o.innerHTML = '<div class="dlg' + (narrow ? ' narrow' : '') + '"><button class="x" data-close aria-label="Close">×</button>' + html + '</div>';
+  o.addEventListener('mousedown', e => { if (e.target === o) closeModal(); });
+  $('#modal-root').appendChild(o); return o;
+}
+function closeModal() { const o = $('#ov'); if (o) o.remove(); }
+function confirmBox(msg, okLabel, withReason) {
+  return new Promise(res => {
+    const o = openModal('<p>' + esc(msg) + '</p>' + (withReason ? '<div class="f"><label>Reason (shown to the participant)</label><textarea id="cb-reason"></textarea></div>' : '') +
+      '<div class="row" style="margin-top:14px"><button class="btn sec" id="cb-no">Cancel</button><button class="btn" id="cb-yes">' + esc(okLabel || 'OK') + '</button></div>', true);
+    $('#cb-no', o).onclick = () => { closeModal(); res(null); };
+    $('#cb-yes', o).onclick = () => { const r = withReason ? $('#cb-reason', o).value.trim() : ''; if (withReason && !r) { toast('Please enter a reason.', 'bad'); return; } closeModal(); res(withReason ? r : true); };
+    o.querySelector('[data-close]').onclick = () => { closeModal(); res(null); };
+  });
+}
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-close]')) closeModal(); });
+
+/* ============================== state + api ============================== */
+const S = { events: [], me: null, token: null, siteName: CONFIG.SITE_NAME || 'Events', ready: false };
+try { S.token = sessionStorage.getItem('tok'); } catch (e) { /* ignore */ }
+
+async function api(action, data) {
+  let res;
+  try {
+    res = await fetch(CONFIG.API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: action, token: S.token, data: data || {} }) });
+  } catch (e) { throw { code: 'network', error: 'Network problem. Check your connection and try again.' }; }
+  let j;
+  try { j = await res.json(); } catch (e) { throw { code: 'server', error: 'Unexpected reply from the server.' }; }
+  if (!j.ok) { if (j.code === 'auth') signOut(true); throw j; }
+  return j.result;
+}
+
+async function boot() {
+  const r = await api('boot');
+  S.events = r.events; S.me = r.me; S.siteName = r.siteName || S.siteName;
+  if (S.token && !S.me) { S.token = null; try { sessionStorage.removeItem('tok'); } catch (e) { /* ignore */ } }
+  S.ready = true;
+}
+async function refreshMe() { const r = await api('boot'); S.events = r.events; S.me = r.me; }
+
+function signOut(expired) {
+  S.token = null; S.me = null;
+  try { sessionStorage.removeItem('tok'); } catch (e) { /* ignore */ }
+  if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
+  if (expired) toast('Your session expired. Please sign in again.', 'bad');
+  renderHeader();
+  if (/^#\/(profile|my|register|admin)/.test(location.hash)) location.hash = '#/';
+  route();
+}
+
+async function onCredential(resp) {
+  S.token = resp.credential;
+  try { sessionStorage.setItem('tok', S.token); } catch (e) { /* ignore */ }
+  try { await refreshMe(); } catch (e) { toast(e.error || 'Could not sign in.', 'bad'); return; }
+  renderHeader(); route();
+  if (S.me && !S.me.profileComplete && !/profile/.test(location.hash)) { toast('Please complete your profile to register for events.'); }
+}
+
+function initGoogle() {
+  if (CONFIG.DEV_MODE) return;
+  if (!(window.google && google.accounts && google.accounts.id)) { setTimeout(initGoogle, 300); return; }
+  google.accounts.id.initialize({ client_id: CONFIG.GOOGLE_CLIENT_ID, callback: onCredential, auto_select: true, cancel_on_tap_outside: false });
+  renderSignInButton();
+  if (!S.me) google.accounts.id.prompt();
+}
+function renderSignInButton() {
+  const box = $('#signin-slot'); if (!box) return;
+  if (CONFIG.DEV_MODE) {
+    box.innerHTML = '<button class="btn sec sm" id="devsign">Sign in (test)</button>';
+    $('#devsign').onclick = async () => { const em = prompt('Test email'); if (em) await onCredential({ credential: 'dev:' + em }); };
+    return;
+  }
+  if (window.google && google.accounts && google.accounts.id) google.accounts.id.renderButton(box, { theme: 'outline', size: 'medium', text: 'signin_with', shape: 'rectangular' });
+}
+
+function renderHeader() {
+  document.title = S.siteName;
+  $('#brand').textContent = S.siteName;
+  const h = location.hash || '#/';
+  const on = p => (h === p || h.indexOf(p + '/') === 0) ? ' class="on"' : '';
+  let nav = '<a href="#/"' + (h === '#/' || h === '' || h.indexOf('#/event') === 0 || h.indexOf('#/register') === 0 ? ' class="on"' : '') + '>Events</a>';
+  if (S.me) nav += '<a href="#/my"' + on('#/my') + '>My registrations</a><a href="#/profile"' + on('#/profile') + '>My profile</a>';
+  if (S.me && S.me.isAdmin) nav += '<a href="#/admin"' + on('#/admin') + '>Admin</a>';
+  $('#nav').innerHTML = nav;
+  if (S.me) {
+    $('#who').innerHTML = '<span>' + esc(S.me.email) + '</span><button class="btn sec sm" id="signout">Sign out</button>';
+    $('#signout').onclick = () => signOut(false);
+  } else {
+    $('#who').innerHTML = '<div id="signin-slot"></div>';
+    renderSignInButton();
+  }
+}
+
+/* ============================== router ============================== */
+async function route() {
+  renderHeader();
+  const h = (location.hash || '#/').replace(/^#\/?/, '').split('/');
+  const app = $('#app');
+  window.scrollTo(0, 0);
+  try {
+    if (!S.ready) { app.innerHTML = '<p class="muted">Loading…</p>'; return; }
+    const p = h[0] || 'events';
+    if (p === 'events' || p === '') return pageEvents(app);
+    if (p === 'event') return pageEvent(app, h[1]);
+    if (['register', 'profile', 'my', 'admin'].indexOf(p) >= 0 && !S.me) return needSignIn(app);
+    if (p === 'register') return pageRegister(app, h[1]);
+    if (p === 'profile') return pageProfile(app);
+    if (p === 'my') return pageMy(app);
+    if (p === 'admin') { if (!S.me.isAdmin) { app.innerHTML = '<div class="notice n-bad">You do not have admin access.</div>'; return; } return pageAdmin(app, h.slice(1)); }
+    app.innerHTML = '<p>Page not found. <a href="#/">Back to events</a></p>';
+  } catch (e) { app.innerHTML = '<div class="notice n-bad">' + esc(e.error || e.message || 'Something went wrong.') + '</div>'; console.error(e); }
+}
+window.addEventListener('hashchange', route);
+function needSignIn(app) {
+  app.innerHTML = '<div class="card center"><h1>Please sign in</h1><p class="muted">Use the Sign in with Google button at the top of the page to continue.</p></div>';
+}
+
+/* ============================== events (public) ============================== */
+const DEFAULT_PRIVACY = 'The information collected through this form will be used for participant registration, event administration, academic/program evaluation, and institutional or government reporting and compliance. Depending on the participant category, it may include personal and contact details, academic or professional information, government-reporting information, identification details and a photograph. It will be handled securely, accessed only by authorized personnel for official purposes, and not shared with third parties except where required for official institutional purposes, government reporting, legal or regulatory compliance, or as permitted by applicable law. By submitting, you acknowledge and consent to the collection and use of your information for these purposes.';
+const isPast = ev => { const e = ms(ev.endAt) || ms(ev.startAt); return !isNaN(e) && e < Date.now(); };
+const feeText = ev => ev.feeType === 'paid' ? ('₹' + (ev.feeInternal || 0) + ' (Amrita) / ₹' + (ev.feeExternal || 0) + ' (others)') : 'Free';
+const myReg = id => S.me ? (S.me.registrations || []).filter(r => r.eventId === id && ['Pending', 'Confirmed', 'Waitlisted'].indexOf(r.status) >= 0)[0] : null;
+let evFilter = { tab: 'upcoming', q: '' };
+
+function pageEvents(app) {
+  const list = S.events.filter(e => (evFilter.tab === 'past') === isPast(e) && (!evFilter.q || (e.title + ' ' + e.tags + ' ' + e.shortDesc + ' ' + e.type).toLowerCase().indexOf(evFilter.q.toLowerCase()) >= 0))
+    .sort((a, b) => evFilter.tab === 'past' ? ms(b.startAt) - ms(a.startAt) : ms(a.startAt) - ms(b.startAt));
+  let html = '<h1>Events</h1>';
+  if (S.me && !S.me.profileComplete) html += '<div class="notice n-warn">Your profile is incomplete. <a href="#/profile">Complete it now</a> to register for events.</div>';
+  if (!S.me) html += '<div class="notice n-info">Sign in with Google (top right) to register. You fill in your details once and register for any event in one click.</div>';
+  html += '<div class="row" style="margin-bottom:14px"><div class="tabs" style="margin:0"><a href="#/" data-tab="upcoming" class="' + (evFilter.tab === 'upcoming' ? 'on' : '') + '">Upcoming</a><a href="#/" data-tab="past" class="' + (evFilter.tab === 'past' ? 'on' : '') + '">Past</a></div><div class="sp"></div><input id="evq" style="max-width:260px" placeholder="Search events" value="' + esc(evFilter.q) + '"></div>';
+  html += list.length ? '<div class="grid">' + list.map(eventCard).join('') + '</div>' : '<div class="card muted">No ' + evFilter.tab + ' events to show.</div>';
+  app.innerHTML = html;
+  app.querySelectorAll('[data-tab]').forEach(a => a.onclick = ev => { ev.preventDefault(); evFilter.tab = a.dataset.tab; pageEvents(app); });
+  $('#evq').oninput = ev => { evFilter.q = ev.target.value; const pos = ev.target.selectionStart; pageEvents(app); const q = $('#evq'); q.focus(); q.setSelectionRange(pos, pos); };
+}
+function eventCard(e) {
+  const reg = myReg(e.id);
+  const bg = e.posterUrl ? ' style="background-image:url(\'' + esc(e.posterUrl) + '\')"' : '';
+  return '<a class="card evt" href="#/event/' + esc(e.id) + '" style="text-decoration:none;color:inherit"><div class="img"' + bg + '></div><div class="body">' +
+    '<div><span class="tag">' + esc(e.type || 'Event') + '</span>' + (e.status === 'Registration closed' ? badge('Registration closed') : '') + (reg ? badge(reg.status) : '') + '</div>' +
+    '<h3>' + esc(e.title) + '</h3><div class="meta">' + fmtDate(e.startAt) + '</div><div class="meta">' + esc(e.mode || '') + (e.venue ? ' · ' + esc(e.venue) : '') + '</div>' +
+    '<div class="meta">' + esc(feeText(e)) + (e.seatsLeft !== null && e.seatsLeft !== undefined ? ' · ' + e.seatsLeft + ' seats left' : '') + '</div>' +
+    (e.shortDesc ? '<div>' + esc(e.shortDesc) + '</div>' : '') + '</div></a>';
+}
+
+function sec(title, txt) { return txt ? '<h2>' + esc(title) + '</h2><div class="pre">' + nl(txt) + '</div>' : ''; }
+function faqHtml(t) { return t ? '<h2>FAQs</h2><div class="pre">' + nl(t) + '</div>' : ''; }
+function pageEvent(app, id) {
+  const e = S.events.filter(x => x.id === id)[0];
+  if (!e) { app.innerHTML = '<p>Event not found. <a href="#/">Back to events</a></p>'; return; }
+  const reg = myReg(e.id);
+  let cta = '';
+  if (reg) cta = '<div class="notice n-ok">You are registered. Status: ' + badge(reg.status) + ' <a href="#/my">View my registrations</a></div>';
+  else if (!e.registrationOpen) cta = '<div class="notice n-warn">Registration is not open' + (e.status === 'Published' && e.regOpensAt && ms(e.regOpensAt) > Date.now() ? ' yet. Opens ' + fmtDate(e.regOpensAt) : '') + '.</div>';
+  else if (e.seatsLeft === 0 && e.waitlist !== 'TRUE') cta = '<div class="notice n-warn">This event is full.</div>';
+  else if (!S.me) cta = '<div class="notice n-info">Sign in with Google (top right) to register.</div>';
+  else cta = '<a class="btn" href="#/register/' + esc(e.id) + '">' + (e.seatsLeft === 0 ? 'Join waitlist' : 'Register') + '</a>';
+  const kv = [['When', fmtDate(e.startAt) + (e.endAt ? ' to ' + fmtDate(e.endAt) : '')], ['Mode', e.mode], ['Venue', e.venue ? (e.mapLink ? '<a href="' + esc(e.mapLink) + '" target="_blank" rel="noopener">' + esc(e.venue) + '</a>' : esc(e.venue)) : ''],
+    ['Fee', esc(feeText(e))], ['Seats', e.seatsLeft !== null && e.seatsLeft !== undefined ? e.seatsLeft + ' left of ' + e.capacity : 'Open'],
+    ['Registration', (e.regOpensAt ? 'Opens ' + fmtDate(e.regOpensAt) : '') + (e.regClosesAt ? ' · Closes ' + fmtDate(e.regClosesAt) : '')], ['Organiser', esc(e.organiser)],
+    ['Coordinator', [e.coordinatorName, e.coordinatorEmail, e.coordinatorPhone].filter(Boolean).map(esc).join(' · ')], ['Funded by', esc(e.fundingBody)], ['Certificate', esc(e.certificateInfo ? 'Yes' : '')]]
+    .filter(r => r[1]).map(r => '<dt>' + r[0] + '</dt><dd>' + (/<a /.test(r[1]) ? r[1] : (r[0] === 'When' || r[0] === 'Registration' ? r[1] : r[1])) + '</dd>').join('');
+  app.innerHTML = '<p><a href="#/">← All events</a></p><div class="hero">' + (e.posterUrl ? '<img class="img" src="' + esc(e.posterUrl) + '" alt="">' : '') + '<div style="flex:1;min-width:260px"><span class="tag">' + esc(e.type || 'Event') + '</span>' + (e.status !== 'Published' ? badge(e.status) : '') +
+    '<h1>' + esc(e.title) + '</h1><p>' + esc(e.shortDesc) + '</p>' + cta + '</div></div>' +
+    '<div class="card" style="margin-top:14px"><dl class="kv">' + kv + '</dl></div>' +
+    sec('About this event', e.description) + sec('Who can join', e.eligibility) + sec('Prerequisites', e.prerequisites) + sec('Target audience', e.audience) + sec('Speakers and resource persons', e.speakers) +
+    sec('Agenda / syllabus', e.agenda) + sec('What you will learn', e.outcomes) + sec('Certificate', e.certificateInfo) + sec('Attendance', e.attendanceRule) + sec('Refund policy', e.refundPolicy) + faqHtml(e.faqs) + sec('Terms and conditions', e.terms) +
+    (e.brochureUrl ? '<p><a href="' + esc(e.brochureUrl) + '" target="_blank" rel="noopener">Download brochure</a></p>' : '') +
+    (e.contactEmail ? '<p class="muted">Queries: <a href="mailto:' + esc(e.contactEmail) + '">' + esc(e.contactEmail) + '</a></p>' : '');
+}
+
+/* ============================== profile fields ============================== */
+const PF = {
+  category: { label: 'Participant category', t: 'select', opts: () => REF.categories, rr: 1, wide: 1 },
+  title: { label: 'Title', t: 'select', opts: () => REF.titles },
+  firstName: { label: 'First name', t: 'text' },
+  middleName: { label: 'Middle name', t: 'text' },
+  lastName: { label: 'Last name', t: 'text', help: 'If you have no surname, enter your initial or father\'s name.' },
+  mobile: { label: 'Mobile number', t: 'tel', help: '10 digits, without +91' },
+  gender: { label: 'Gender', t: 'select', opts: () => REF.genders },
+  dob: { label: 'Date of birth', t: 'date' },
+  socialCategory: { label: 'Category', t: 'select', opts: () => REF.socialCategories },
+  disability: { label: 'Do you have a disability?', t: 'yn' },
+  minority: { label: 'Are you a member of a minority community?', t: 'yn' },
+  state: { label: 'State / Union Territory', t: 'select', opts: () => Object.keys(REF.states), rr: 1, help: 'State of your permanent residence' },
+  district: { label: 'District', t: 'select', opts: o => REF.states[o.state] || [], help: 'Choose the state first' },
+  pincode: { label: 'PIN code', t: 'text' },
+  address: { label: 'Permanent residential address', t: 'textarea', wide: 1 },
+  idType: { label: 'ID proof type', t: 'select', opts: () => REF.idTypes },
+  idLast4: { label: 'ID proof number (last 4 digits only)', t: 'text', help: 'For PAN, licence or passport, enter the last 4 numeric digits.' },
+  apaar: { label: 'APAAR ID (ABC ID)', t: 'text', help: '12 digits' },
+  qualification: { label: 'Qualification', t: 'select', opts: () => REF.qualifications, rr: 1 },
+  branch: { label: 'Branch / stream (optional)', t: 'select', opts: o => REF.branches[o.qualification] || [] },
+  semester: { label: 'Semester / year (optional)', t: 'select', opts: o => REF.semesters[o.qualification] || [] },
+  isAmritaStudent: { label: 'Are you an Amrita student?', t: 'yn', rr: 1 },
+  campus: { label: 'Campus', t: 'select', opts: () => REF.campuses },
+  rollNumber: { label: 'Roll number', t: 'text', help: 'For example NC.SC.U4CSE24228' },
+  classProgram: { label: 'Class / semester and program', t: 'text' },
+  institutionNameAddress: { label: 'Institution / college name and address', t: 'textarea', wide: 1 },
+  university: { label: 'University / affiliated institution', t: 'text' },
+  department: { label: 'Department', t: 'text' },
+  schoolCenter: { label: 'School / Centre / Institution', t: 'text' },
+  employmentType: { label: 'Employment type', t: 'select', opts: () => REF.employmentTypes },
+  companyNameAddress: { label: 'Company / organization name and address', t: 'textarea', wide: 1 }
+};
+const PF_KEYS = Object.keys(PF);
+const catIdx = o => REF.categories.indexOf(o.category);
+function visibleKeys(o) {
+  const ci = catIdx(o); if (ci < 0) return ['category'];
+  const k = ['category', 'title', 'firstName', 'middleName', 'lastName', 'mobile', 'gender', 'dob', 'socialCategory', 'disability', 'minority', 'state', 'district', 'pincode', 'address', 'idType', 'idLast4'];
+  if (ci === 0) k.push('department', 'schoolCenter');
+  else {
+    k.push('qualification', 'branch', 'semester', 'apaar');
+    if (ci <= 5) { k.push('isAmritaStudent'); if (o.isAmritaStudent === 'Yes') k.push('campus', 'rollNumber'); else if (o.isAmritaStudent === 'No') k.push('classProgram', 'institutionNameAddress', 'university'); }
+    if (ci === 6) k.push('employmentType', 'companyNameAddress');
+  }
+  return k;
+}
+function isReq(k, o) { if (k === 'middleName' || k === 'branch' || k === 'semester') return false; if (k === 'apaar') { const ci = catIdx(o); return ci >= 1 && ci <= 5; } return true; }
+
+function validateProfile(o, needPhoto) {
+  const e = {}, ks = visibleKeys(o);
+  ks.forEach(k => {
+    const v = String(o[k] || '').trim();
+    if (!v) { if (isReq(k, o)) e[k] = 'This field is required.'; return; }
+    if (k === 'mobile' && !/^[6-9]\d{9}$/.test(v)) e[k] = 'Enter a valid 10-digit mobile number (no +91).';
+    if (k === 'pincode' && !/^\d{6}$/.test(v)) e[k] = 'Enter a 6-digit PIN code.';
+    if (k === 'idLast4' && !/^\d{4}$/.test(v)) e[k] = 'Enter only the last 4 digits (numbers only).';
+    if (k === 'apaar' && !/^\d{12}$/.test(v)) e[k] = 'APAAR ID must be 12 digits.';
+    if (k === 'dob') { const t = Date.parse(v + 'T00:00:00Z'), y = (Date.now() - t) / (365.25 * 864e5); if (isNaN(t) || y < 10 || y > 100) e[k] = 'Enter a valid date of birth.'; }
+    if (k === 'district' && (REF.states[o.state] || []).indexOf(v) < 0) e[k] = 'This district does not belong to the selected state.';
+    if (k === 'branch' && (REF.branches[o.qualification] || []).indexOf(v) < 0) e[k] = 'Choose a branch listed for this qualification.';
+    if (k === 'semester' && (REF.semesters[o.qualification] || []).indexOf(v) < 0) e[k] = 'Choose a semester/year listed for this qualification.';
+  });
+  if (needPhoto) e.photo = needPhoto;
+  if (!needPhoto) delete e.photo;
+  return e;
+}
+
+const NS = {}, NSR = {};
+function fieldHtml(ns, k, o, errs) {
+  const m = PF[k], v = o[k] || '', err = errs && errs[k], id = ns + '_' + k, da = 'data-ns="' + ns + '" data-name="' + k + '"' + (m.rr ? ' data-rr="1"' : '');
+  let inner;
+  if (m.t === 'select') {
+    const opts = m.opts(o);
+    inner = '<select id="' + id + '" ' + da + '><option value="">Select…</option>' + opts.map(x => '<option' + (x === v ? ' selected' : '') + '>' + esc(x) + '</option>').join('') + '</select>';
+  } else if (m.t === 'yn') {
+    inner = '<div class="radios">' + ['Yes', 'No'].map(x => '<label><input type="radio" name="' + id + '" value="' + x + '" ' + da + (v === x ? ' checked' : '') + '> ' + x + '</label>').join('') + '</div>';
+  } else if (m.t === 'textarea') inner = '<textarea id="' + id + '" ' + da + '>' + esc(v) + '</textarea>';
+  else inner = '<input id="' + id + '" type="' + m.t + '" value="' + esc(v) + '" ' + da + (m.t === 'date' ? ' max="' + new Date().toISOString().slice(0, 10) + '"' : '') + '>';
+  return '<div class="f' + (m.wide ? ' wide' : '') + (err ? ' err' : '') + '"><label for="' + id + '">' + esc(m.label) + (isReq(k, o) ? ' <span class="req">*</span>' : '') + '</label>' + inner + (m.help ? '<small>' + esc(m.help) + '</small>' : '') + (err ? '<div class="msg">' + esc(err) + '</div>' : '') + '</div>';
+}
+const PF_GROUPS = [['About you', ['category']], ['Personal details', ['title', 'firstName', 'middleName', 'lastName', 'mobile', 'gender', 'dob', 'socialCategory', 'disability', 'minority']],
+  ['Permanent address', ['state', 'district', 'pincode', 'address']], ['Identity', ['idType', 'idLast4', 'apaar']],
+  ['Education / work', ['qualification', 'branch', 'semester', 'isAmritaStudent', 'campus', 'rollNumber', 'classProgram', 'institutionNameAddress', 'university', 'department', 'schoolCenter', 'employmentType', 'companyNameAddress']]];
+function groupsHtml(ns, o, errs, photoBlock) {
+  const vis = visibleKeys(o);
+  return PF_GROUPS.map(g => {
+    const ks = g[1].filter(k => vis.indexOf(k) >= 0);
+    let extra = '';
+    if (g[0] === 'Identity' && photoBlock && vis.length > 1) extra = photoBlock;
+    return ks.length || extra ? '<div class="sec-h">' + g[0] + '</div><div class="fg">' + ks.map(k => fieldHtml(ns, k, o, errs)).join('') + extra + '</div>' : '';
+  }).join('');
+}
+function bindFields(ns, obj, rerender) {
+  NS[ns] = obj; NSR[ns] = rerender;
+}
+document.addEventListener('input', e => {
+  const t = e.target; if (!t.dataset || !t.dataset.ns || !NS[t.dataset.ns]) return;
+  if (t.type === 'radio' && !t.checked) return;
+  NS[t.dataset.ns][t.dataset.name] = t.value;
+});
+document.addEventListener('change', e => {
+  const t = e.target; if (!t.dataset || !t.dataset.ns || !NS[t.dataset.ns]) return;
+  const o = NS[t.dataset.ns]; o[t.dataset.name] = t.value;
+  if (t.dataset.name === 'state') o.district = '';
+  if (t.dataset.name === 'qualification') { o.branch = ''; o.semester = ''; }
+  if (t.dataset.rr && NSR[t.dataset.ns]) NSR[t.dataset.ns](t.dataset.name);
+});
+
+/* image helpers */
+function fileToBase64(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(file); }); }
+function compressImage(file, maxDim) {
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      let w = img.width, h = img.height; const sc = Math.min(1, maxDim / Math.max(w, h)); w = Math.round(w * sc); h = Math.round(h * sc);
+      const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h);
+      let q = 0.9; const step = () => c.toBlob(b => { if (b.size > 1.9 * 1024 * 1024 && q > 0.4) { q -= 0.15; step(); } else { URL.revokeObjectURL(url); res(b); } }, 'image/jpeg', q); step();
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('That file is not a readable image.')); };
+    img.src = url;
+  });
+}
+async function prepareUpload(file, isPhoto) {
+  if (!file) return null;
+  if (file.type === 'application/pdf' && !isPhoto) { if (file.size > 2 * 1024 * 1024) throw new Error('PDF must be under 2 MB.'); return { mime: file.type, base64: await fileToBase64(file), name: file.name }; }
+  if (!/^image\/(jpeg|png)$/.test(file.type)) throw new Error(isPhoto ? 'Please upload a JPG or PNG photograph.' : 'Please upload a JPG, PNG or PDF file.');
+  const blob = await compressImage(file, isPhoto ? 900 : 1600);
+  return { mime: 'image/jpeg', base64: await fileToBase64(blob), name: file.name };
+}
+async function loadFileInto(img, fileId) {
+  if (!fileId) return; try { const r = await api('getFile', { fileId: fileId }); img.src = r.dataUrl; img.dataset.url = r.dataUrl; } catch (e) { /* ignore */ }
+}
+function openDataUrl(u) { const a = u.split(','), mime = /data:(.*?);/.exec(a[0])[1], bin = atob(a[1]), arr = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i); window.open(URL.createObjectURL(new Blob([arr], { type: mime })), '_blank'); }
+
+/* ============================== profile page ============================== */
+function pageProfile(app) {
+  const pf = Object.assign({}, S.me.profile || {});
+  let photo = null, errs = {}, saving = false;
+  const hasPhoto = !!pf.photoFileId;
+  const draw = () => {
+    const photoBlock = '<div class="f wide"><label>Passport-size photograph <span class="req">*</span></label><div class="row"><img class="thumb' + (photo || hasPhoto ? '' : ' hide') + '" id="pf-thumb" alt="Photo preview" ' + (photo ? 'src="data:' + photo.mime + ';base64,' + photo.base64 + '"' : '') + '><div><input type="file" id="pf-photo" accept="image/jpeg,image/png"><small>Recent passport-size photo of yourself only. Do not upload an ID card or other document. JPG or PNG; it is resized automatically.</small>' + (errs.photo ? '<div class="msg">' + esc(errs.photo) + '</div>' : '') + '</div></div></div>';
+    app.innerHTML = '<h1>My profile</h1>' + (S.me.profileComplete ? '' : '<div class="notice n-warn">Complete this once and you can register for any event in one click.</div>') +
+      '<form id="pform" class="card" novalidate><div class="f"><label>Email (from your Google account)</label><input value="' + esc(S.me.email) + '" disabled></div>' +
+      groupsHtml('pf', pf, errs, catIdx(pf) >= 0 ? photoBlock : '') +
+      (catIdx(pf) < 0 ? '<p class="muted">Choose your participant category to see the remaining fields.</p>' : '<div class="row" style="margin-top:22px"><button class="btn" type="submit" id="psave">Save profile</button></div>') + '</form>';
+    bindFields('pf', pf, draw);
+    const fi = $('#pf-photo');
+    if (fi) fi.onchange = async () => { try { photo = await prepareUpload(fi.files[0], true); delete errs.photo; const t = $('#pf-thumb'); t.classList.remove('hide'); t.src = 'data:' + photo.mime + ';base64,' + photo.base64; } catch (e) { toast(e.message, 'bad'); } };
+    if (!photo && hasPhoto) loadFileInto($('#pf-thumb'), pf.photoFileId);
+    const form = $('#pform');
+    form.onsubmit = async ev => {
+      ev.preventDefault(); if (saving) return;
+      errs = validateProfile(pf, (!photo && !pf.photoFileId) ? 'A passport-size photograph is required.' : '');
+      if (Object.keys(errs).length) { draw(); const f = $('.f.err'); if (f) f.scrollIntoView({ block: 'center' }); else window.scrollTo(0, document.body.scrollHeight); toast('Please fix the highlighted fields.', 'bad'); return; }
+      saving = true; $('#psave').disabled = true;
+      const payload = {}; visibleKeys(pf).forEach(k => payload[k] = pf[k]);
+      try {
+        const r = await api('saveProfile', { profile: payload, photo: photo });
+        S.me.profile = r.profile; await refreshMe(); toast('Profile saved.', 'ok');
+        const back = sessionStorage.getItem('afterProfile'); if (back) { sessionStorage.removeItem('afterProfile'); location.hash = back; } else route();
+      } catch (e) { if (e.errors) { errs = e.errors; draw(); } toast(e.error || 'Could not save.', 'bad'); saving = false; }
+    };
+  };
+  draw();
+}
+
+/* ============================== register ============================== */
+async function pageRegister(app, id) {
+  const e = S.events.filter(x => x.id === id)[0];
+  if (!e) { app.innerHTML = '<p>Event not found. <a href="#/">Back</a></p>'; return; }
+  if (!S.me.profileComplete) { sessionStorage.setItem('afterProfile', '#/register/' + id); app.innerHTML = '<div class="notice n-warn">Please complete your profile first. <a href="#/profile">Go to my profile</a></div>'; return; }
+  const reg = myReg(id);
+  if (reg) { app.innerHTML = '<div class="notice n-ok">You are already registered for this event (' + esc(reg.status) + '). <a href="#/my">My registrations</a></div>'; return; }
+  if (!e.registrationOpen) { app.innerHTML = '<div class="notice n-warn">Registration is not open for this event. <a href="#/event/' + esc(id) + '">Back</a></div>'; return; }
+  const p = S.me.profile, internal = p.category === REF.categories[0] || p.isAmritaStudent === 'Yes';
+  const fee = e.feeType === 'paid' ? (Number(internal ? e.feeInternal : e.feeExternal) || 0) : 0;
+  let proof = null, errs = {};
+  const draw = (vals) => {
+    vals = vals || {};
+    app.innerHTML = '<p><a href="#/event/' + esc(id) + '">← ' + esc(e.title) + '</a></p><h1>Register</h1><div class="card"><h3>' + esc(e.title) + '</h3><div class="muted">' + fmtDate(e.startAt) + ' · ' + esc(e.mode || '') + (e.venue ? ' · ' + esc(e.venue) : '') + '</div>' +
+      '<p>Registering as <b>' + esc([p.title, p.firstName, p.lastName].join(' ')) + '</b> (' + esc(S.me.email) + '). <a href="#/profile">Edit profile</a></p>' +
+      (e.seatsLeft === 0 ? '<div class="notice n-info">This event is full. You will be added to the waitlist.</div>' : '') +
+      '<form id="rform" novalidate>' + (fee > 0 ?
+        '<div class="notice n-info"><b>Fee: ₹' + fee + '</b> (' + (internal ? 'Amrita participant' : 'external participant') + ')' + (e.upiId ? '<br>Pay by UPI to <b>' + esc(e.upiId) + '</b>, then enter the transaction ID and upload the screenshot.' : '<br>Pay as instructed by the organisers, then enter the transaction ID and upload the screenshot.') + (e.refundPolicy ? '<br><small>' + esc(e.refundPolicy) + '</small>' : '') + '</div>' +
+        '<div class="fg"><div class="f' + (errs.txnId ? ' err' : '') + '"><label>UPI transaction ID <span class="req">*</span></label><input id="r-txn" value="' + esc(vals.txn || '') + '" autocomplete="off">' + (errs.txnId ? '<div class="msg">' + esc(errs.txnId) + '</div>' : '') + '</div>' +
+        '<div class="f' + (errs.proof ? ' err' : '') + '"><label>Payment screenshot <span class="req">*</span></label><input type="file" id="r-proof" accept="image/jpeg,image/png,application/pdf">' + (proof ? '<small>Attached: ' + esc(proof.name) + '</small>' : '') + (errs.proof ? '<div class="msg">' + esc(errs.proof) + '</div>' : '') + '</div></div>' : '') +
+      '<details style="margin:14px 0"><summary>Data Use &amp; Privacy Notice</summary><p class="muted pre">' + nl(e.privacyNotice || DEFAULT_PRIVACY) + '</p></details>' +
+      '<div class="f' + (errs.consent ? ' err' : '') + '"><label style="font-weight:400"><input type="checkbox" id="r-consent"' + (vals.consent ? ' checked' : '') + '> I have read the notice and consent to the collection and use of my information for these purposes.</label>' + (errs.consent ? '<div class="msg">' + esc(errs.consent) + '</div>' : '') + '</div>' +
+      '<div class="row" style="margin-top:14px"><button class="btn" id="rgo" type="submit">' + (e.seatsLeft === 0 ? 'Join waitlist' : 'Submit registration') + '</button></div></form></div>';
+    const pi = $('#r-proof');
+    if (pi) pi.onchange = async () => { try { proof = await prepareUpload(pi.files[0], false); errs.proof = ''; draw(snap()); } catch (x) { toast(x.message, 'bad'); } };
+    $('#rform').onsubmit = async ev => {
+      ev.preventDefault(); const v = snap(); errs = {};
+      if (fee > 0) { if (!/^[A-Za-z0-9]{8,30}$/.test(v.txn.trim())) errs.txnId = 'Enter the UPI transaction ID (8-30 letters/digits).'; if (!proof) errs.proof = 'Please upload the payment screenshot.'; }
+      if (!v.consent) errs.consent = 'Consent is required.';
+      if (Object.keys(errs).length) { draw(v); toast('Please fix the highlighted fields.', 'bad'); return; }
+      $('#rgo').disabled = true;
+      try { await api('register', { eventId: id, txnId: v.txn, proof: proof, consent: true }); await refreshMe(); toast('Registration submitted.', 'ok'); location.hash = '#/my'; }
+      catch (x) { if (x.errors) errs = x.errors; toast(x.error || 'Could not register.', 'bad'); draw(v); if (x.code === 'duplicate' || x.code === 'closed' || x.code === 'full') { await refreshMe(); } }
+    };
+  };
+  const snap = () => ({ txn: $('#r-txn') ? $('#r-txn').value : '', consent: $('#r-consent') ? $('#r-consent').checked : false });
+  draw();
+}
+
+/* ============================== my registrations ============================== */
+function pageMy(app) {
+  const regs = (S.me.registrations || []).slice().sort((a, b) => (b.appliedAt || '').localeCompare(a.appliedAt || ''));
+  app.innerHTML = '<h1>My registrations</h1>' + (!S.me.profileComplete ? '<div class="notice n-warn">Your profile is incomplete. <a href="#/profile">Complete it</a>.</div>' : '') +
+    (regs.length ? regs.map(r => {
+      const ev = S.events.filter(x => x.id === r.eventId)[0], active = ['Pending', 'Confirmed', 'Waitlisted'].indexOf(r.status) >= 0;
+      return '<div class="card" style="margin-bottom:12px"><div class="row"><h3 class="sp" style="margin:0"><a href="#/event/' + esc(r.eventId) + '">' + esc(r.eventTitle) + '</a></h3>' + badge(r.status) + '</div>' +
+        '<div class="muted">Event: ' + fmtDate(r.eventStart) + ' · Applied ' + fmtIso(r.appliedAt) + '</div>' +
+        (Number(r.fee) > 0 ? '<div>Fee ₹' + esc(r.fee) + ' · Payment ' + badge(r.paymentStatus) + ' · Transaction ' + esc(r.txnId) + '</div>' : '') +
+        (r.status === 'Rejected' ? '<div class="notice n-bad" style="margin-top:8px">Reason: ' + esc(r.rejectReason) + '</div>' : '') +
+        (r.meetingLink ? '<div style="margin-top:8px"><a href="' + esc(r.meetingLink) + '" target="_blank" rel="noopener">Joining link</a></div>' : '') +
+        '<div class="row" style="margin-top:10px">' + (active ? '<button class="btn sec sm" data-cancel="' + esc(r.id) + '">Cancel registration</button>' : '') +
+        (!active && ev && ev.registrationOpen ? '<a class="btn sm" href="#/register/' + esc(r.eventId) + '">Register again</a>' : '') + '</div></div>';
+    }).join('') : '<div class="card muted">You have not registered for any events yet. <a href="#/">Browse events</a></div>');
+  app.querySelectorAll('[data-cancel]').forEach(b => b.onclick = async () => {
+    if (!(await confirmBox('Cancel this registration?', 'Yes, cancel'))) return;
+    try { await api('cancelMyRegistration', { regId: b.dataset.cancel }); await refreshMe(); toast('Registration cancelled.', 'ok'); pageMy(app); } catch (e) { toast(e.error || 'Could not cancel.', 'bad'); }
+  });
+}
+
+/* ============================== admin ============================== */
+const EVENT_STATUSES = ['Draft', 'Published', 'Registration closed', 'Completed', 'Cancelled'];
+const EVENT_SPEC = [
+  ['Basics', [['title', 'Title', 'text', { req: 1, wide: 1 }], ['type', 'Event type', 'select', { opts: ['Bootcamp', 'Workshop', 'Webinar', 'Seminar', 'Competition', 'Course', 'Other'] }], ['shortDesc', 'Short description (shown on the card)', 'text', { wide: 1 }], ['description', 'Full description', 'textarea', { wide: 1 }], ['tags', 'Tags (comma separated)', 'text'], ['posterUrl', 'Poster / banner image link', 'url']]],
+  ['Schedule (India time)', [['startAt', 'Starts', 'datetime-local', { req: 1 }], ['endAt', 'Ends', 'datetime-local'], ['regOpensAt', 'Registration opens', 'datetime-local'], ['regClosesAt', 'Registration closes', 'datetime-local']]],
+  ['Venue', [['mode', 'Mode', 'select', { opts: ['Online', 'Offline', 'Hybrid'] }], ['venue', 'Venue / campus', 'text'], ['mapLink', 'Map link', 'url'], ['meetingLink', 'Meeting link (shown only to confirmed participants)', 'url']]],
+  ['People', [['organiser', 'Organiser', 'text'], ['coordinatorName', 'Coordinator name', 'text'], ['coordinatorEmail', 'Coordinator email', 'email'], ['coordinatorPhone', 'Coordinator phone', 'text'], ['speakers', 'Speakers / resource persons (one per line: name, designation)', 'textarea', { wide: 1 }]]],
+  ['Eligibility', [['eligibility', 'Who can join', 'textarea', { wide: 1 }], ['prerequisites', 'Prerequisites', 'textarea', { wide: 1 }], ['audience', 'Target audience', 'text', { wide: 1 }]]],
+  ['Capacity and fee', [['capacity', 'Total seats (blank or 0 = unlimited)', 'number'], ['waitlist', 'Enable waitlist when full', 'checkbox'], ['feeType', 'Fee', 'select', { opts: [['free', 'Free'], ['paid', 'Paid']] }], ['feeInternal', 'Fee for Amrita students and staff (₹)', 'number'], ['feeExternal', 'Fee for external participants (₹)', 'number'], ['upiId', 'UPI ID for payments', 'text'], ['refundPolicy', 'Refund policy', 'textarea', { wide: 1 }]]],
+  ['Content', [['agenda', 'Agenda / syllabus', 'textarea', { wide: 1 }], ['outcomes', 'What participants will learn', 'textarea', { wide: 1 }], ['certificateInfo', 'Certificate details and criteria', 'textarea', { wide: 1 }], ['faqs', 'FAQs', 'textarea', { wide: 1 }], ['brochureUrl', 'Brochure link', 'url']]],
+  ['Funding and rules', [['fundingBody', 'Funding body (records only)', 'text'], ['attendanceRule', 'Attendance requirement', 'text'], ['terms', 'Terms and conditions', 'textarea', { wide: 1 }], ['privacyNotice', 'Data Use & Privacy Notice (leave blank to use the default)', 'textarea', { wide: 1 }], ['contactEmail', 'Contact email for queries', 'email']]],
+  ['Settings', [['mainEvent', 'Main event (send confirmation emails and reminders)', 'checkbox'], ['autoConfirm', 'Auto-confirm free registrations', 'checkbox'], ['status', 'Status', 'select', { opts: EVENT_STATUSES }]]]
+];
+const CAT_SHORT = ['Faculty/Staff', 'Eng. UG', 'Eng. PG', 'Eng. grad ≤2y', 'Non-eng.', 'PhD', 'Working', 'Job seeker'];
+const catShort = c => { const i = REF.categories.indexOf(c); return i >= 0 ? CAT_SHORT[i] : c; };
+
+async function pageAdmin(app, seg) {
+  const sub = seg[0] || '';
+  const tabs = [['', 'Overview'], ['events', 'Events'], ['admins', 'Admins'], ['log', 'Activity log']];
+  const nav = '<div class="tabs">' + tabs.map(t => '<a href="#/admin' + (t[0] ? '/' + t[0] : '') + '" class="' + ((sub === t[0] || (t[0] === 'events' && ['event', 'regs'].indexOf(sub) >= 0)) ? 'on' : '') + '">' + t[1] + '</a>').join('') + '</div>';
+  app.innerHTML = '<h1>Admin</h1>' + nav + '<div id="adm"><p class="muted">Loading…</p></div>';
+  const box = $('#adm');
+  try {
+    if (sub === '' ) return await adminOverview(box);
+    if (sub === 'events') return await adminOverview(box, true);
+    if (sub === 'event') return await adminEventForm(box, seg[1]);
+    if (sub === 'regs') return await adminRegs(box, seg[1]);
+    if (sub === 'admins') return await adminAdmins(box);
+    if (sub === 'log') return await adminLog(box);
+    box.innerHTML = '<p>Not found.</p>';
+  } catch (e) { box.innerHTML = '<div class="notice n-bad">' + esc(e.error || e.message) + '</div>'; }
+}
+
+async function adminOverview(box, eventsOnly) {
+  const r = await api('adminOverview'), t = r.totals;
+  const tile = (n, l) => '<div class="tile"><b>' + n + '</b><span>' + l + '</span></div>';
+  box.innerHTML = (eventsOnly ? '' : '<div class="tiles">' + tile(t.events, 'Events') + tile(t.published, 'Published') + tile(t.pending, 'Pending review') + tile(t.confirmed, 'Confirmed') + tile(t.waitlisted, 'Waitlisted') + tile(r.profiles, 'Profiles') + '</div>') +
+    '<div class="row" style="margin:14px 0"><h2 style="margin:0" class="sp">Events</h2><a class="btn" href="#/admin/event/new">+ New event</a></div>' +
+    (r.events.length ? '<div class="tw"><table><thead><tr><th>Event</th><th>Date</th><th>Status</th><th>Pending</th><th>Confirmed</th><th>Waitlist</th><th>Seats</th><th></th></tr></thead><tbody>' +
+      r.events.slice().sort((a, b) => (b.startAt || '').localeCompare(a.startAt || '')).map(e => '<tr><td><b>' + esc(e.title) + '</b><div class="muted">' + esc(e.type) + (e.mainEvent === 'TRUE' ? ' · main event' : '') + '</div></td><td>' + fmtDate(e.startAt) + '</td><td>' + badge(e.status) + '</td><td>' + (e.counts.Pending || 0) + '</td><td>' + (e.counts.Confirmed || 0) + '</td><td>' + (e.counts.Waitlisted || 0) + '</td><td>' + (e.capacity && e.capacity !== '0' ? e.capacity : '∞') + '</td>' +
+        '<td style="white-space:nowrap"><a class="btn sm" href="#/admin/regs/' + esc(e.id) + '">Registrations</a> <a class="btn sec sm" href="#/admin/event/' + esc(e.id) + '">Edit</a> <a class="btn sec sm" href="#/admin/event/copy-' + esc(e.id) + '">Duplicate</a></td></tr>').join('') + '</tbody></table></div>' : '<div class="card muted">No events yet. Create the first one.</div>');
+  box._events = r.events;
+}
+
+async function adminEventForm(box, idArg) {
+  let ev = {}, isCopy = false;
+  if (idArg && idArg !== 'new') {
+    const r = await api('adminOverview'); const rawId = idArg.replace(/^copy-/, ''); isCopy = /^copy-/.test(idArg);
+    ev = r.events.filter(x => x.id === rawId)[0]; if (!ev) { box.innerHTML = '<p>Event not found.</p>'; return; }
+    ev = Object.assign({}, ev); delete ev.counts;
+    if (isCopy) { ev.id = ''; ev.title += ' (copy)'; ev.status = 'Draft'; ['startAt', 'endAt', 'regOpensAt', 'regClosesAt'].forEach(k => ev[k] = ''); }
+  } else { ev = { status: 'Draft', feeType: 'free', type: 'Workshop', mode: 'Offline', waitlist: 'FALSE', mainEvent: 'FALSE', autoConfirm: 'FALSE' }; }
+  let errs = {};
+  const field = (spec) => {
+    const k = spec[0], label = spec[1], t = spec[2], o = spec[3] || {}, v = ev[k] || '', id = 'ev_' + k, err = errs[k];
+    let inner;
+    if (t === 'select') inner = '<select id="' + id + '" data-k="' + k + '">' + o.opts.map(x => { const val = Array.isArray(x) ? x[0] : x, lab = Array.isArray(x) ? x[1] : x; return '<option value="' + esc(val) + '"' + (val === v ? ' selected' : '') + '>' + esc(lab) + '</option>'; }).join('') + '</select>';
+    else if (t === 'checkbox') return '<div class="f"><label style="font-weight:400"><input type="checkbox" id="' + id + '" data-k="' + k + '"' + (v === 'TRUE' ? ' checked' : '') + '> ' + esc(label) + '</label></div>';
+    else if (t === 'textarea') inner = '<textarea id="' + id + '" data-k="' + k + '">' + esc(v) + '</textarea>';
+    else inner = '<input id="' + id + '" type="' + t + '" data-k="' + k + '" value="' + esc(v) + '">';
+    return '<div class="f' + (o.wide ? ' wide' : '') + (err ? ' err' : '') + '"><label for="' + id + '">' + esc(label) + (o.req ? ' <span class="req">*</span>' : '') + '</label>' + inner + (err ? '<div class="msg">' + esc(err) + '</div>' : '') + '</div>';
+  };
+  const draw = () => {
+    box.innerHTML = '<p><a href="#/admin/events">← Events</a></p><h2>' + (ev.id ? 'Edit event' : 'New event') + '</h2><form id="eform" class="card" novalidate>' +
+      EVENT_SPEC.map(s => '<div class="sec-h">' + s[0] + '</div><div class="fg">' + s[1].map(field).join('') + '</div>').join('') +
+      '<div class="row" style="margin-top:22px"><button class="btn" type="submit">Save event</button><a class="btn sec" href="#/admin/events">Cancel</a></div></form>';
+    box.querySelectorAll('[data-k]').forEach(el => {
+      const upd = () => { ev[el.dataset.k] = el.type === 'checkbox' ? (el.checked ? 'TRUE' : 'FALSE') : el.value; };
+      el.addEventListener('input', upd); el.addEventListener('change', upd);
+    });
+    $('#eform').onsubmit = async e => {
+      e.preventDefault();
+      try { await api('adminSaveEvent', { event: ev }); toast('Event saved.', 'ok'); location.hash = '#/admin/events'; }
+      catch (x) { if (x.errors) { errs = x.errors; draw(); const f = $('.f.err'); if (f) f.scrollIntoView({ block: 'center' }); } toast(x.error || 'Could not save.', 'bad'); }
+    };
+  };
+  draw();
+}
+
+/* ---- registrations ---- */
+async function adminRegs(box, eventId) {
+  let data = await api('adminRegistrations', { eventId: eventId });
+  const ev = data.event; let f = { status: '', q: '' }; const sel = new Set();
+  const visible = () => data.registrations.filter(r => (!f.status || r.status === f.status) && (!f.q || (r.name + ' ' + r.email + ' ' + r.mobile + ' ' + r.rollNumber + ' ' + r.institution + ' ' + r.txnId).toLowerCase().indexOf(f.q.toLowerCase()) >= 0))
+    .sort((a, b) => (b.appliedAt || '').localeCompare(a.appliedAt || ''));
+  const draw = () => {
+    const rows = visible(), counts = {}; data.registrations.forEach(r => counts[r.status] = (counts[r.status] || 0) + 1);
+    box.innerHTML = '<p><a href="#/admin/events">← Events</a></p><div class="row"><div class="sp"><h2 style="margin:0">' + esc(ev.title) + '</h2><div class="muted">' + fmtDate(ev.startAt) + ' · ' + badge(ev.status) + ' · ' + data.registrations.length + ' registrations' + (ev.capacity && ev.capacity !== '0' ? ' · capacity ' + esc(ev.capacity) : '') + '</div></div><button class="btn sec" id="csv">Download CSV</button></div>' +
+      '<div class="row" style="margin:14px 0"><select id="fs" style="max-width:190px"><option value="">All statuses (' + data.registrations.length + ')</option>' + ['Pending', 'Confirmed', 'Waitlisted', 'Rejected', 'Cancelled'].map(s => '<option' + (f.status === s ? ' selected' : '') + ' value="' + s + '">' + s + ' (' + (counts[s] || 0) + ')</option>').join('') + '</select>' +
+      '<input id="fq" style="max-width:280px" placeholder="Search name, email, mobile, roll no" value="' + esc(f.q) + '"><div class="sp"></div>' +
+      '<span class="muted">' + sel.size + ' selected</span><button class="btn ok sm" id="bc"' + (sel.size ? '' : ' disabled') + '>Confirm</button><button class="btn bad sm" id="br"' + (sel.size ? '' : ' disabled') + '>Reject</button></div>' +
+      (rows.length ? '<div class="tw"><table><thead><tr><th><input type="checkbox" id="sa"></th><th>Participant</th><th>Category</th><th>Audience</th><th>Payment</th><th>Status</th><th>Flags</th><th>Applied</th></tr></thead><tbody>' +
+        rows.map(r => '<tr class="click" data-id="' + esc(r.id) + '"><td><input type="checkbox" data-sel="' + esc(r.id) + '"' + (sel.has(r.id) ? ' checked' : '') + '></td><td><b>' + esc(r.name) + '</b><div class="muted">' + esc(r.email) + ' · ' + esc(r.mobile) + '</div></td><td>' + esc(catShort(r.category)) + '<div class="muted">' + esc(r.campus || r.institution || '').slice(0, 40) + '</div></td><td>' + esc(r.audience) + '</td><td>' + (Number(r.fee) > 0 ? '₹' + esc(r.fee) + '<div class="muted">' + esc(r.txnId) + '</div>' + badge(r.paymentStatus) : '<span class="muted">Free</span>') + '</td><td>' + badge(r.status) + '</td><td style="color:var(--bad)">' + r.flags.map(esc).join('<br>') + '</td><td>' + fmtIso(r.appliedAt) + '</td></tr>').join('') + '</tbody></table></div>' : '<div class="card muted">No registrations match.</div>');
+    $('#fs').onchange = e => { f.status = e.target.value; sel.clear(); draw(); };
+    $('#fq').oninput = e => { f.q = e.target.value; const p = e.target.selectionStart; draw(); const q = $('#fq'); q.focus(); q.setSelectionRange(p, p); };
+    $('#csv').onclick = () => downloadCsv(ev, rows);
+    const sa = $('#sa'); if (sa) sa.onchange = e => { rows.forEach(r => e.target.checked ? sel.add(r.id) : sel.delete(r.id)); draw(); };
+    box.querySelectorAll('[data-sel]').forEach(c => { c.onclick = e => e.stopPropagation(); c.onchange = () => { c.checked ? sel.add(c.dataset.sel) : sel.delete(c.dataset.sel); draw(); }; });
+    box.querySelectorAll('tr.click').forEach(tr => tr.onclick = () => regDetail(data.registrations.filter(r => r.id === tr.dataset.id)[0], ev, async () => { data = await api('adminRegistrations', { eventId: eventId }); draw(); }));
+    const bulk = async (action) => {
+      const reason = action === 'reject' ? await confirmBox('Reject ' + sel.size + ' registration(s)?', 'Reject', true) : await confirmBox('Confirm ' + sel.size + ' registration(s)?', 'Confirm');
+      if (!reason) return;
+      try { const r = await api('adminBulkUpdate', { regIds: Array.from(sel), action: action, reason: action === 'reject' ? reason : '' }); toast(r.updated + ' updated.', 'ok'); sel.clear(); data = await api('adminRegistrations', { eventId: eventId }); draw(); } catch (e) { toast(e.error || 'Failed.', 'bad'); }
+    };
+    $('#bc').onclick = () => bulk('confirm'); $('#br').onclick = () => bulk('reject');
+  };
+  draw();
+}
+
+function downloadCsv(ev, rows) {
+  const keys = PF_KEYS.filter(k => k !== 'category'); const head = ['Registration ID', 'Status', 'Applied at', 'Audience', 'Fee', 'Transaction ID', 'Payment status', 'Reject reason', 'Admin note', 'Email', 'Participant category'].concat(keys.map(k => PF[k].label));
+  const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const lines = [head.map(q).join(',')].concat(rows.map(r => [r.id, r.status, r.appliedAt, r.audience, r.fee, r.txnId, r.paymentStatus, r.rejectReason, r.adminNote, r.email, r.category].concat(keys.map(k => (r.snapshot || {})[k] || '')).map(q).join(',')));
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (ev.title || 'event').replace(/[^a-z0-9]+/gi, '_') + '_registrations.csv'; document.body.appendChild(a); a.click(); a.remove();
+}
+
+function regDetail(r, ev, reload) {
+  let editing = false, errs = {}, obj = Object.assign({}, r.snapshot);
+  const act = async (action, reason) => {
+    try { const res = await api('adminUpdateRegistration', { regId: r.id, action: action, reason: reason || '', patch: action === 'edit' ? pick(obj) : undefined }); toast('Done.', 'ok'); closeModal(); await reload(); return res; }
+    catch (e) { if (e.errors) { errs = e.errors; draw(); } toast(e.error || 'Failed.', 'bad'); }
+  };
+  const pick = o => { const p = {}; visibleKeys(o).forEach(k => p[k] = o[k]); p.category = o.category; return p; };
+  const draw = () => {
+    const s = r.snapshot || {};
+    const kvs = visibleKeys(s).map(k => '<dt>' + esc(PF[k].label) + '</dt><dd>' + esc(s[k] || '—') + '</dd>').join('');
+    const m = openModal('<h2 style="margin-top:0">' + esc(r.name) + ' ' + badge(r.status) + '</h2><div class="muted">' + esc(r.email) + ' · applied ' + fmtIso(r.appliedAt) + '</div>' +
+      (r.flags.length ? '<div class="notice n-bad" style="margin-top:10px">' + r.flags.map(esc).join(' · ') + '</div>' : '') +
+      (r.rejectReason ? '<div class="notice n-bad" style="margin-top:10px">Reason: ' + esc(r.rejectReason) + '</div>' : '') +
+      '<div class="row" style="margin:12px 0;align-items:flex-start"><img class="thumb" id="rd-photo" alt="Photo">' +
+      '<div class="sp">' + (Number(r.fee) > 0 ? '<div><b>Payment</b>: ₹' + esc(r.fee) + ' · ' + esc(r.audience) + ' · txn ' + esc(r.txnId) + ' ' + badge(r.paymentStatus) + (r.paymentProofFileId ? ' <button class="btn sec sm" id="rd-proof">View screenshot</button>' : '') + '</div>' : '<div class="muted">Free registration · ' + esc(r.audience) + '</div>') + '</div></div>' +
+      (editing ? '<div id="ed">' + groupsHtml('ed', obj, errs, '') + '</div><div class="row" style="margin-top:14px"><button class="btn" id="ed-save">Save changes</button><button class="btn sec" id="ed-cancel">Cancel</button></div>'
+        : '<dl class="kv">' + kvs + '</dl>' +
+          '<div class="f" style="margin-top:14px"><label>Admin note (private)</label><textarea id="rd-note">' + esc(r.adminNote) + '</textarea></div>' +
+          '<div class="row" style="margin-top:14px"><button class="btn ok" id="a-confirm">Confirm</button><button class="btn sec" id="a-wait">Waitlist</button><button class="btn bad" id="a-reject">Reject…</button><button class="btn sec" id="a-cancel">Cancel registration</button><span class="sp"></span><button class="btn sec sm" id="a-note">Save note</button><button class="btn sec sm" id="a-edit">Edit details</button><button class="btn sec sm" id="a-del">Delete</button></div>'));
+    loadFileInto($('#rd-photo', m), s.photoFileId);
+    const pr = $('#rd-proof', m); if (pr) pr.onclick = async () => { try { const x = await api('getFile', { fileId: r.paymentProofFileId }); openDataUrl(x.dataUrl); } catch (e) { toast(e.error || 'Could not open file.', 'bad'); } };
+    if (editing) {
+      bindFields('ed', obj, draw);
+      $('#ed-cancel', m).onclick = () => { editing = false; errs = {}; obj = Object.assign({}, r.snapshot); draw(); };
+      $('#ed-save', m).onclick = () => act('edit');
+    } else {
+      $('#a-confirm', m).onclick = () => act('confirm');
+      $('#a-wait', m).onclick = () => act('waitlist');
+      $('#a-reject', m).onclick = async () => { const why = await confirmBox('Reject this registration?', 'Reject', true); if (why) act('reject', why); };
+      $('#a-cancel', m).onclick = async () => { if (await confirmBox('Mark this registration as cancelled?', 'Cancel it')) act('cancel'); };
+      $('#a-note', m).onclick = () => act('note', $('#rd-note', m).value);
+      $('#a-edit', m).onclick = () => { editing = true; draw(); };
+      $('#a-del', m).onclick = async () => { if (await confirmBox('Delete this registration permanently? This cannot be undone.', 'Delete')) act('delete'); };
+    }
+  };
+  draw();
+}
+
+/* ---- admins + log ---- */
+async function adminAdmins(box) {
+  const r = await api('adminAdmins');
+  box.innerHTML = '<h2>Admins</h2><div class="card"><table><thead><tr><th>Email</th><th>Added by</th><th>Added</th><th></th></tr></thead><tbody>' + r.admins.map(a => '<tr><td>' + esc(a.email) + '</td><td>' + esc(a.addedBy) + '</td><td>' + fmtIso(a.addedAt) + '</td><td>' + (a.email !== S.me.email ? '<button class="btn sec sm" data-rm="' + esc(a.email) + '">Remove</button>' : '<span class="muted">you</span>') + '</td></tr>').join('') + '</tbody></table>' +
+    '<form id="addadm" class="row" style="margin-top:14px"><input id="adm-email" type="email" placeholder="Google account email" style="max-width:320px"><button class="btn" type="submit">Add admin</button></form></div>';
+  $('#addadm').onsubmit = async e => { e.preventDefault(); try { await api('adminAddAdmin', { email: $('#adm-email').value }); toast('Admin added.', 'ok'); adminAdmins(box); } catch (x) { toast(x.error || 'Failed.', 'bad'); } };
+  box.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => { if (!(await confirmBox('Remove ' + b.dataset.rm + ' as admin?', 'Remove'))) return; try { await api('adminRemoveAdmin', { email: b.dataset.rm }); toast('Removed.', 'ok'); adminAdmins(box); } catch (x) { toast(x.error || 'Failed.', 'bad'); } });
+}
+async function adminLog(box) {
+  const r = await api('adminLog');
+  box.innerHTML = '<h2>Activity log</h2><div class="tw"><table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Details</th></tr></thead><tbody>' + r.log.map(l => '<tr><td>' + fmtIso(l.at) + '</td><td>' + esc(l.actor) + '</td><td>' + esc(l.action) + '</td><td>' + esc(l.details) + '</td></tr>').join('') + '</tbody></table></div>';
+}
+
+/* ============================== start ============================== */
+(async function start() {
+  renderHeader();
+  try { await boot(); } catch (e) { $('#app').innerHTML = '<div class="notice n-bad">' + esc(e.error || 'Could not reach the server. Check config.js.') + '</div>'; return; }
+  initGoogle(); route();
+})();
+</script>
+</body>
+</html>
